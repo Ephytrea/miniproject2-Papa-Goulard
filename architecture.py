@@ -1,8 +1,6 @@
 import torch
-from torch.utils.data import Dataset
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
 import math
 
 class CausalSelfAttn(nn.Module) :
@@ -64,6 +62,8 @@ class Shakespeare(nn.Module) :
 
         self.block_size = block_size
 
+        self.drop = nn.Dropout(dropout)
+
         self.token_emb = nn.Embedding(vocab_size, embed_dim)
         self.pos_emb = nn.Embedding(block_size, embed_dim)
 
@@ -73,10 +73,11 @@ class Shakespeare(nn.Module) :
         self.head = nn.Linear(embed_dim, vocab_size, bias=False)
 
     def forward(self, idx, targets=None) :
-        B, T = idx.shape
+        _, T = idx.shape
         pos = torch.arange(T, device=idx.device)
 
         x = self.token_emb(idx) + self.pos_emb(pos)
+        x = self.drop(x)
         x = self.blocks(x)
         x = self.ln_f(x)
         logits = self.head(x)
