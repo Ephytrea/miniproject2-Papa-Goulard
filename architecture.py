@@ -29,7 +29,7 @@ class CausalSelfAttn(nn.Module) :
         q = self.query(x).view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
         v = self.value(x).view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
 
-        att = (q @ k.transpose(-2, -1)) * (1 / math.sqrt(self.head_dim)) # Formula attention
+        att = (q @ k.transpose(-2, -1)) / math.sqrt(self.head_dim)# Formula attention
         att = att.masked_fill(self.mask[:T, :T] == 0, float('-inf')) # Apply mask
         att = F.softmax(att, dim = -1)
         att = self.dropout(att)
